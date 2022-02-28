@@ -1,18 +1,18 @@
 const { http } = require('@architect/functions')
-const createConnectedClient = require('@architect/shared/redis-client')
+const { createConnectedClient, clientContext, clientClose } = require('@architect/shared/redis-client')
 
 function convert(data) {
   return Object.entries(data).map(([key, value]) => ({ _id: key, ...JSON.parse(value) }))
 }
 
-exports.handler = http.async(read)
+exports.handler = http.async(clientContext, read)
 
-async function read(req) {
+async function read() {
   const client = await createConnectedClient()
 
   let todos = await client.hGetAll('todos')
 
-  await client.quit()
+  await clientClose()
 
   return {
     statusCode: 200,

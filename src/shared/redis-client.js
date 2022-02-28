@@ -1,9 +1,10 @@
 const redis = require('redis');
 
+const client = redis.createClient({
+  url: process.env.REDIS_URL
+})
+
 async function createConnectedClient() {
-  const client = redis.createClient({
-    url: process.env.REDIS_URL
-  })
   client.on('connect', () => {
     console.log("connected to redis");
   })
@@ -16,8 +17,16 @@ async function createConnectedClient() {
     console.log("dis-connected from redis");
   });
 
-  client.connect()
+  await client.connect()
   return client;
 }
 
-module.exports = createConnectedClient;
+async function clientClose() {
+  client.quit()
+}
+
+async function clientContext(req, context) {
+  process.env.ARC_ENV === 'testing' ? context.callbackWaitsForEmptyEventLoop = true : context.callbackWaitsForEmptyEventLoop = false
+}
+
+module.exports = { createConnectedClient, clientContext, clientClose };

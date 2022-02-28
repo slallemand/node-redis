@@ -1,7 +1,7 @@
 const { http } = require('@architect/functions')
-const createConnectedClient = require('@architect/shared/redis-client')
+const { createConnectedClient, clientContext, clientClose } = require('@architect/shared/redis-client')
 
-exports.handler = http.async(destroy)
+exports.handler = http.async(clientContext, destroy)
 
 async function destroy(req) {
   const client = await createConnectedClient()
@@ -10,7 +10,7 @@ async function destroy(req) {
 
   await client.hDel('todos', key)
 
-  await client.quit()
+  await clientClose()
 
   return {
     statusCode: 302,

@@ -1,8 +1,8 @@
 const { http } = require('@architect/functions')
 const { nanoid } = require('nanoid')
-const createConnectedClient = require('@architect/shared/redis-client')
+const { createConnectedClient, clientContext, clientClose } = require('@architect/shared/redis-client')
 
-exports.handler = http.async(create)
+exports.handler = http.async(clientContext, create)
 
 async function create(req) {
   const client = await createConnectedClient()
@@ -11,7 +11,7 @@ async function create(req) {
 
   await client.hSet('todos', nanoid(), JSON.stringify(todo))
 
-  await client.quit()
+  await clientClose()
 
   return {
     statusCode: 302,
